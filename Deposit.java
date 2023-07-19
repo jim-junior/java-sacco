@@ -3,9 +3,9 @@ package Deposit;
 import java.sql.*;
 
 public class Deposit {
-  private String dbUrl = "jdbc:mysql://root:gaCv4GRenj0eTSpdSzXM@containers-us-west-103.railway.app:6179/railway";
+  private String dbUrl = "jdbc:mysql://root:M3Sk65aoEEvPCnyxoTzX@containers-us-west-207.railway.app:6325/railway";
   private String username = "root";
-  private String password = "gaCv4GRenj0eTSpdSzXM";
+  private String password = "M3Sk65aoEEvPCnyxoTzX";
   private Connection con = null;
 
   public Deposit() {
@@ -17,21 +17,31 @@ public class Deposit {
     }
   }
 
-  public void deposit(int amount, String date_deposited, int receipt_number) {
+  public void deposit(String[] commandArgs) {
     try {
-      Statement statement;
-      statement = con.createStatement();
-      ResultSet res = statement.executeQuery("SELECT * FROM receipts");
+      String receiptId = commandArgs[1];
+      Integer amount = Integer.parseInt(commandArgs[2]);
+      String query = "SELECT * FROM receipts WHERE receipt_number = ? and amount = ?";
 
-      while (res.next()) {
-        if (res.getInt("receipt_number") == receipt_number) {
-          System.out.println("Acknowledgement");
-          return;
-        }
+      PreparedStatement preparedStatement = con.prepareStatement(query);
+      preparedStatement.setString(1, receiptId);
+      preparedStatement.setInt(2, amount);
+      ResultSet resultSet = preparedStatement.executeQuery();
+
+      if (resultSet.next()) {
+        System.out.println("Deposit Successfull");
+      } else {
+        System.out.println("No Reciept Found. Please try again later after new information is uploaded.");
       }
-      System.out.println("Check later after new information is uploaded");
+
     } catch (Exception e) {
       System.out.println(e);
     }
+  }
+
+  public static void main(String[] args) {
+    Deposit deposit = new Deposit();
+    String[] commandArgs = { "deposit", "R001", "20000" };
+    deposit.deposit(commandArgs);
   }
 }
